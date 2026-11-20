@@ -28,10 +28,25 @@ _database_initialized = False
 @app.before_request
 def initialize_database():
     global _database_initialized
-    if not request.endpoint or not request.endpoint.startswith('api_') or _database_initialized:
+    if not request.endpoint or not request.endpoint.startswith('api_'):
         return
+
+    missing_config = []
     if not app.secret_key:
-        raise RuntimeError("SECRET_KEY environment variable is required for database-backed requests.")
+        missing_config.append('SECRET_KEY')
+    if not os.environ.get('DATABASE_URL'):
+        missing_config.append('DATABASE_URL')
+    if missing_config:
+        return jsonify({
+            "error": "Server configuration error",
+            "message": (
+                f"Missing required server configuration: {', '.join(missing_config)}. "
+                "Set these environment variables and restart the app."
+            )
+        }), 503
+
+    if _database_initialized:
+        return
     init_master_db()
     _database_initialized = True
 

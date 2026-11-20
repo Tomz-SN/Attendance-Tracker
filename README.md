@@ -74,6 +74,8 @@ Keep `.env` private; it is ignored by Git. Generate a session secret with:
 python -c "import secrets; print(secrets.token_hex(32))"
 ```
 
+Login and registration require both `SECRET_KEY` and `DATABASE_URL`. If either is missing, the API returns a server configuration error; set the variables in `.env` locally or in the deployment's environment settings, then restart or redeploy.
+
 ### 4. Start the Web Server
 ```bash
 python app.py
