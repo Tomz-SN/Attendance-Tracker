@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance tracker — Student Attendance Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <!-- Chart.js local bundle -->
+  <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+</head>
+<body>
+
+  <!-- Dynamic Cosmic Canvas for stars and shooting comets -->
+  <canvas id="cosmic-canvas"></canvas>
+
+  <!-- Ambient Nebula Glow Elements -->
+  <div class="nebula-glow nebula-1"></div>
+  <div class="nebula-glow nebula-2"></div>
+
+  <!-- Main Application Container -->
+  <div class="app-container">
+
+    <!-- Cosmic Header / Navigation (Clean, no credits in nav bar) -->
+    <header class="cosmic-navbar">
+      <div class="brand-section">
+        <div class="brand-icon-box">🌌</div>
+        <div class="brand-title-wrap">
+          <h1>Attendance tracker</h1>
+          <div class="brand-subtitle" style="font-size: 0.8rem; color: var(--text-secondary);">Student Attendance & Bunk Orbit Calculator</div>
+        </div>
+      </div>
+
+      <!-- User Nav Actions (When Logged In) -->
+      <div class="user-nav-actions" id="user-nav-bar" style="display: none;">
+        <div class="user-pill">
+          <span id="user-avatar-icon">🧑‍🚀</span>
+          <span id="nav-user-name" style="font-weight: 600;">Student</span>
+          <span class="target-badge" id="nav-target-badge">Aim: 75%</span>
+        </div>
+        <button class="cosmic-btn btn-ghost btn-sm" id="btn-open-settings" title="Profile Settings">
+          ⚙️ Settings
+        </button>
+        <button class="cosmic-btn btn-ghost btn-sm" id="btn-logout" title="Log Out">
+          🚪 Exit
+        </button>
+      </div>
+
+      <!-- Auth Action Buttons (When Logged Out) -->
+      <div class="user-nav-actions" id="guest-nav-bar">
+        <button class="cosmic-btn btn-ghost btn-sm" id="btn-nav-register">
+          ✨ Register
+        </button>
+        <button class="cosmic-btn btn-primary btn-sm" id="btn-nav-login">
+          🚀 Sign In
+        </button>
+      </div>
+    </header>
+
+    <!-- Welcome Hero (Displayed when student is logged out) -->
+    <section id="auth-hero-view" class="auth-hero-card" style="display: none;">
+      <div class="auth-hero-icon">🪐</div>
+      <h2>Student Attendance Vault</h2>
+      <p>
+        Your dedicated, private attendance tracker. Create custom subjects, log class hours with precision, 
+        calculate how many classes you can safely miss, and track your attendance goals.
+      </p>
+      <div class="auth-hero-buttons">
+        <button class="cosmic-btn btn-primary" id="btn-hero-login" style="padding: 0.75rem;">
+          🔑 Student Sign In
+        </button>
+        <button class="cosmic-btn btn-cyan" id="btn-hero-register" style="padding: 0.75rem;">
+          ✨ Create New Student Account
+        </button>
+      </div>
+      <div style="margin-top: 2rem; font-size: 0.82rem; color: var(--text-muted); display: flex; align-items: center; justify-content: center; gap: 0.4rem;">
+        <span>🔒</span>
+        <span>Enterprise Data Isolation: Each student's records are stored in private dedicated database tables.</span>
+      </div>
+    </section>
+
+    <!-- Authenticated App Hub (Displayed when logged in) -->
+    <main id="app-main-hub" style="display: none;">
+
+      <!-- Top Stat HUD -->
+      <div class="stats-hud-grid">
+        <div class="hud-card">
+          <div class="hud-icon-box" style="background: rgba(139, 92, 246, 0.2); color: var(--neon-purple);">
+            🎯
+          </div>
+          <div class="hud-info">
+            <span class="hud-label">Current Attendance</span>
+            <span class="hud-value" id="hud-overall-pct">0%</span>
+            <span class="hud-sub" id="hud-target-sub">Aiming for 75%</span>
+          </div>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-icon-box" style="background: rgba(6, 182, 212, 0.2); color: var(--neon-cyan);">
+            ⏱️
+          </div>
+          <div class="hud-info">
+            <span class="hud-label">Total Class Hours</span>
+            <span class="hud-value" id="hud-hours-ratio">0 / 0</span>
+            <span class="hud-sub" id="hud-missed-sub">0 hours missed</span>
+          </div>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-icon-box" style="background: rgba(16, 185, 129, 0.2); color: var(--neon-green);" id="hud-bunk-icon">
+            🛸
+          </div>
+          <div class="hud-info">
+            <span class="hud-label">Safe Bunk Status</span>
+            <span class="hud-value" id="hud-bunk-val">0 hrs</span>
+            <span class="hud-sub" id="hud-bunk-sub">Safe to miss</span>
+          </div>
+        </div>
+
+        <div class="hud-card">
+          <div class="hud-icon-box" style="background: rgba(245, 158, 11, 0.2); color: var(--neon-amber);" id="hud-rank-icon">
+            🌟
+          </div>
+          <div class="hud-info">
+            <span class="hud-label">Cosmic Standing</span>
+            <span class="hud-value" id="hud-orbit-rank" style="font-size: 1.15rem;">Good Standing</span>
+            <span class="hud-sub" id="hud-subjects-count">0 Subjects Registered</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="cosmic-tabs">
+        <button class="tab-btn active" data-tab="tab-subjects">
+          🪐 Subjects & Quick Log
+        </button>
+        <button class="tab-btn" data-tab="tab-manual-log">
+          ⏱️ Manual Hours Logger
+        </button>
+        <button class="tab-btn" data-tab="tab-bunk-calc">
+          🔮 Safe Miss Simulator
+        </button>
+        <button class="tab-btn" data-tab="tab-statistics">
+          📊 Statistics & Reports
+        </button>
+        <button class="tab-btn" data-tab="tab-history">
+          📜 Attendance History
+        </button>
+      </nav>
+
+      <!-- ================= TAB 1: SUBJECTS ================= -->
+      <section id="tab-subjects" class="tab-content active" style="margin-top: 1.5rem;">
+        <div class="section-header">
+          <div class="section-title">
+            <span>📚</span>
+            <span>Your Registered Subjects</span>
+            <span style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(Private Student Table)</span>
+          </div>
+          <button class="cosmic-btn btn-primary" id="btn-add-subject-modal">
+            ✨ Add New Subject
+          </button>
+        </div>
+
+        <!-- Subjects Grid -->
+        <div id="subjects-container" class="subjects-grid">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- Empty state when no subjects exist -->
+        <div id="subjects-empty-state" class="auth-hero-card" style="display: none; padding: 2.5rem 1.5rem;">
+          <div style="font-size: 3rem; margin-bottom: 0.75rem;">🛰️</div>
+          <h3>No Subjects Registered Yet</h3>
+          <p style="margin-bottom: 1.25rem;">Add your semester subjects to start tracking hours and simulating safe bunks. You can edit or rename them anytime!</p>
+          <button class="cosmic-btn btn-primary" id="btn-empty-add-subject">
+            ➕ Add Your First Subject
+          </button>
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: MANUAL HOURS LOGGER ================= -->
+      <section id="tab-manual-log" class="tab-content" style="margin-top: 1.5rem;">
+        <div class="calc-hero-card" style="max-width: 680px; margin: 0 auto;">
+          <div class="section-title">
+            <span>⏱️</span>
+            <span>Log Class Hours Manually</span>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            Record class sessions with exact date, duration in hours, and attendance status. All records are stored directly into your dedicated attendance table.
+          </p>
+
+          <form id="form-log-attendance" style="display: flex; flex-direction: column; gap: 1.15rem;">
+            <div class="form-group">
+              <label class="form-label" for="log-subject-select">Select Subject *</label>
+              <select id="log-subject-select" class="form-select" required>
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="log-date-input">Class Date *</label>
+                <input type="date" id="log-date-input" class="form-input" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="log-status-select">Attendance Status</label>
+                <select id="log-status-select" class="form-select">
+                  <option value="present">✅ Present (Attended)</option>
+                  <option value="absent">❌ Absent (Missed)</option>
+                  <option value="duty">🎖️ Duty Leave / Medical</option>
+                  <option value="cancelled">🚫 Class Cancelled</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="log-hours-conducted">Hours Conducted</label>
+                <input type="number" id="log-hours-conducted" class="form-input" min="0.5" step="0.5" value="1.0" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="log-hours-attended">Hours Attended</label>
+                <input type="number" id="log-hours-attended" class="form-input" min="0" step="0.5" value="1.0" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="log-notes-input">Topic / Notes (Optional)</label>
+              <input type="text" id="log-notes-input" class="form-input" placeholder="e.g. Lab Experiment 4, Midterm Prep, Chapter 6 Lecture">
+            </div>
+
+            <button type="submit" class="cosmic-btn btn-primary" style="margin-top: 0.5rem; padding: 0.75rem;">
+              🚀 Save Attendance Record
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: BUNK CALCULATOR ================= -->
+      <section id="tab-bunk-calc" class="tab-content" style="margin-top: 1.5rem;">
+        <div class="calc-container">
+          
+          <!-- Interactive Target Slider Card -->
+          <div class="calc-hero-card">
+            <div class="slider-container">
+              <div class="slider-header">
+                <div>
+                  <h3 style="font-size: 1.2rem; font-weight: 700;">🔮 Safe Miss & Bunk Calculator</h3>
+                  <p style="color: var(--text-secondary); font-size: 0.85rem;">
+                    Drag the slider to test different target attendance percentages and see how many classes you can afford to miss!
+                  </p>
+                </div>
+                <div class="target-slider-display" id="calc-slider-val">75%</div>
+              </div>
+              <input type="range" id="calc-target-slider" class="cosmic-range-slider" min="50" max="95" step="1" value="75">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+                <span>50% (Minimum)</span>
+                <span>65%</span>
+                <span>75% (Standard)</span>
+                <span>85%</span>
+                <span>95% (Honor Orbit)</span>
+              </div>
+            </div>
+
+            <!-- Summary Banner -->
+            <div id="calc-overall-banner" class="calc-summary-banner safe">
+              <div class="summary-icon" id="calc-banner-icon">🛸</div>
+              <div>
+                <h3 id="calc-banner-title">Attendance Analysis</h3>
+                <p id="calc-banner-desc">Calculating safe misses across all subjects...</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Per-Subject Bunk Table -->
+          <div class="calc-hero-card">
+            <div class="section-title">
+              <span>📋</span>
+              <span>Subject-by-Subject Bunk Breakdown</span>
+            </div>
+            <div class="table-responsive">
+              <table class="cosmic-table">
+                <thead>
+                  <tr>
+                    <th>Subject</th>
+                    <th>Conducted</th>
+                    <th>Attended</th>
+                    <th>Current %</th>
+                    <th>Target %</th>
+                    <th>Safe to Miss / Needed</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="calc-breakdown-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Interactive What-If Simulator -->
+          <div class="what-if-card">
+            <div class="section-title">
+              <span>🧪</span>
+              <span>What-If Attendance Simulator</span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.88rem;">
+              Simulate upcoming classes: "If I attend the next <strong>A</strong> classes and miss the next <strong>B</strong> classes, what will my overall percentage become?"
+            </p>
+
+            <div class="what-if-form">
+              <div class="form-group">
+                <label class="form-label" for="sim-future-attend">Upcoming Classes to Attend</label>
+                <input type="number" id="sim-future-attend" class="form-input" min="0" value="5">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="sim-future-miss">Upcoming Classes to Miss (Bunk)</label>
+                <input type="number" id="sim-future-miss" class="form-input" min="0" value="2">
+              </div>
+              <button class="cosmic-btn btn-cyan" id="btn-run-simulation">
+                ⚡ Calculate Projection
+              </button>
+            </div>
+
+            <div class="sim-result-box" id="sim-result-box">
+              <span>Projected Attendance Rate:</span>
+              <span id="sim-projected-pct" style="font-size: 1.4rem; color: var(--neon-cyan); font-family: var(--font-mono);">--%</span>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: STATISTICS & REPORTS ================= -->
+      <section id="tab-statistics" class="tab-content" style="margin-top: 1.5rem;">
+        <div class="section-header">
+          <div class="section-title">
+            <span>📊</span>
+            <span>Comprehensive Visual Analytics</span>
+          </div>
+          <div style="display: flex; gap: 0.75rem;">
+            <button class="cosmic-btn btn-ghost btn-sm" id="btn-export-csv">
+              📥 Export CSV
+            </button>
+            <button class="cosmic-btn btn-primary btn-sm" id="btn-print-report">
+              🖨️ Print Report
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-charts-grid">
+          <!-- Chart 1: Subject Attendance Comparison -->
+          <div class="chart-card">
+            <div class="section-title" style="font-size: 1.05rem;">
+              <span>📈</span>
+              <span>Attended vs Conducted Hours by Subject</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-subject-bars"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Attendance Doughnut & Distribution -->
+          <div class="chart-card">
+            <div class="section-title" style="font-size: 1.05rem;">
+              <span>🪐</span>
+              <span>Overall Attendance Ratio</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-doughnut"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Day of Week Analysis -->
+          <div class="chart-card">
+            <div class="section-title" style="font-size: 1.05rem;">
+              <span>📅</span>
+              <span>Day-of-the-Week Attendance Rate (%)</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-dow"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Cumulative Timeline Progress -->
+          <div class="chart-card">
+            <div class="section-title" style="font-size: 1.05rem;">
+              <span>🌌</span>
+              <span>Attendance Trajectory Over Time</span>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="chart-timeline"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= TAB 5: ATTENDANCE HISTORY ================= -->
+      <section id="tab-history" class="tab-content" style="margin-top: 1.5rem;">
+        <div class="section-header">
+          <div class="section-title">
+            <span>📜</span>
+            <span>Attendance Log History & Records</span>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <select id="history-filter-subject" class="form-select" style="width: auto; min-width: 160px;">
+              <option value="">All Subjects</option>
+            </select>
+            <select id="history-filter-status" class="form-select" style="width: auto; min-width: 140px;">
+              <option value="">All Statuses</option>
+              <option value="present">Present</option>
+              <option value="absent">Absent</option>
+              <option value="duty">Duty / Medical</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="cosmic-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Hours Conducted</th>
+                <th>Hours Attended</th>
+                <th>Status</th>
+                <th>Notes / Topic</th>
+                <th style="text-align: right;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-tbody">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Cosmic Footer (Credits displayed ONLY on the footer) -->
+    <footer class="cosmic-footer">
+      <div>Attendance tracker • Precision Student Attendance & Bunk Engine</div>
+      <div class="footer-credits">
+        <span>credits : <strong>Tom Sanson</strong></span>
+        <span>•</span>
+        <span>github : <a href="https://github.com/Tomz-SN" target="_blank" rel="noopener noreferrer">Tomz-SN</a></span>
+      </div>
+      <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+        Built with HTML, CSS, JavaScript, Python & Flask • Strict Student Table Database Isolation
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- 1. Auth Modal (Login / Register) -->
+  <div class="modal-overlay" id="modal-auth">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="auth-modal-title">🚀 Student Sign In</h3>
+        <button class="close-modal-btn" data-close="modal-auth">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Toggle Tabs inside Auth Modal -->
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+          <button class="cosmic-btn btn-ghost btn-sm active" id="auth-tab-login" style="flex: 1;">
+            🔑 Sign In
+          </button>
+          <button class="cosmic-btn btn-ghost btn-sm" id="auth-tab-register" style="flex: 1;">
+            ✨ Register
+          </button>
+        </div>
+
+        <form id="form-auth">
+          <div class="form-group" id="group-fullname" style="display: none;">
+            <label class="form-label" for="auth-fullname">Full Name *</label>
+            <input type="text" id="auth-fullname" class="form-input" placeholder="e.g. Alex Morgan">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="auth-username">Username *</label>
+            <input type="text" id="auth-username" class="form-input" placeholder="e.g. student_alex" required autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="auth-password">Password *</label>
+            <input type="password" id="auth-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+
+          <div class="form-group" id="group-target-pct" style="display: none;">
+            <label class="form-label" for="auth-target-pct">Desired Attendance Target (%)</label>
+            <input type="number" id="auth-target-pct" class="form-input" min="50" max="100" value="75">
+          </div>
+
+          <button type="submit" class="cosmic-btn btn-primary" id="btn-submit-auth" style="width: 100%; margin-top: 0.75rem; padding: 0.75rem;">
+            🚀 Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Add / Edit Subject Modal -->
+  <div class="modal-overlay" id="modal-subject">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="subject-modal-title">✨ Add New Subject</h3>
+        <button class="close-modal-btn" data-close="modal-subject">&times;</button>
+      </div>
+      <form id="form-subject">
+        <div class="modal-body">
+          <input type="hidden" id="subject-edit-id" value="">
+
+          <div class="form-group">
+            <label class="form-label" for="subject-name-input">Subject Name *</label>
+            <input type="text" id="subject-name-input" class="form-input" placeholder="e.g. Mathematics, Physics, Computer Networks" required>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="subject-code-input">Course Code (Optional)</label>
+            <input type="text" id="subject-code-input" class="form-input" placeholder="e.g. CS-301, MATH-102">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="subject-target-input">Subject Target Attendance (%)</label>
+            <input type="number" id="subject-target-input" class="form-input" min="50" max="100" value="75">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Color Theme</label>
+            <input type="hidden" id="subject-color-input" value="#8b5cf6">
+            <div class="color-presets" id="subject-color-presets">
+              <div class="color-swatch selected" data-color="#8b5cf6" style="background: #8b5cf6;"></div>
+              <div class="color-swatch" data-color="#3b82f6" style="background: #3b82f6;"></div>
+              <div class="color-swatch" data-color="#06b6d4" style="background: #06b6d4;"></div>
+              <div class="color-swatch" data-color="#10b981" style="background: #10b981;"></div>
+              <div class="color-swatch" data-color="#f59e0b" style="background: #f59e0b;"></div>
+              <div class="color-swatch" data-color="#ec4899" style="background: #ec4899;"></div>
+              <div class="color-swatch" data-color="#6366f1" style="background: #6366f1;"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="cosmic-btn btn-ghost" data-close="modal-subject">Cancel</button>
+          <button type="submit" class="cosmic-btn btn-primary" id="btn-save-subject">Save Subject</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. Student Settings Modal -->
+  <div class="modal-overlay" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Profile Settings</h3>
+        <button class="close-modal-btn" data-close="modal-settings">&times;</button>
+      </div>
+      <form id="form-settings">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="settings-fullname">Full Name</label>
+            <input type="text" id="settings-fullname" class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settings-target">Default Target Attendance (%)</label>
+            <input type="number" id="settings-target" class="form-input" min="50" max="100" step="1">
+            <small style="color: var(--text-muted); font-size: 0.78rem;">Used as your standard threshold for safe bunk calculations.</small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="settings-new-password">New Password (leave empty to keep current)</label>
+            <input type="password" id="settings-new-password" class="form-input" placeholder="••••••••">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="cosmic-btn btn-ghost" data-close="modal-settings">Cancel</button>
+          <button type="submit" class="cosmic-btn btn-primary">Update Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Cosmic Background & Main Application Scripts -->
+  <script src="{{ url_for('static', filename='js/cosmic.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
