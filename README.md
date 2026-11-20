@@ -6,12 +6,6 @@ Built to scale reliably for thousands of students with strict database table iso
 
 ---
 
-## 🔗 Access Links
-
-- **Local Web Server**: [http://localhost:5000](http://localhost:5000) or [http://127.0.0.1:5000](http://127.0.0.1:5000)
-- **Healthcheck & Status**: [http://localhost:5000/health](http://localhost:5000/health)
-
----
 
 ## 🌟 Production Architecture & Features
 
@@ -89,28 +83,7 @@ Visit: **[http://localhost:5000](http://localhost:5000)**
 
 ---
 
-## ☁️ Deploying to Vercel
-
-Vercel detects the Flask application in `app.py` and installs dependencies
-from `requirements.txt`. Static assets are served from `public/static/`.
-
-1. Create a PostgreSQL database with a hosted provider such as
-   [Neon](https://neon.tech). Vercel's filesystem is not persistent, so the app
-   must use an external PostgreSQL database.
-2. Import this repository into Vercel.
-3. In the Vercel project settings, add `DATABASE_URL` (the provider's PostgreSQL
-   connection string) and `SECRET_KEY` (a long random secret) as environment
-   variables for each environment you deploy to.
-4. Deploy. Vercel will build and route requests to the Flask app; database
-   tables are initialized on the first database-backed request.
-
-You can also deploy from the project directory with the Vercel CLI using
-`vercel` for a preview or `vercel --prod` for production.
-
----
-
 ## 🧑‍🚀 Credits
 
 - **Developer**: Tom Sanson
 - **GitHub**: [Tomz-SN](https://github.com/Tomz-SN)
-*(Displayed on application footer)*
