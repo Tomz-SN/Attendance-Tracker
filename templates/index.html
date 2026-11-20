@@ -3,22 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Attendance tracker — Student Attendance Portal</title>
+  <title>Attendance tracker — Student Attendance Notebook</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <!-- Chart.js local bundle -->
   <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
 </head>
 <body>
-
-  <!-- Dynamic Cosmic Canvas for stars and shooting comets -->
-  <canvas id="cosmic-canvas"></canvas>
-
-  <!-- Ambient Nebula Glow Elements -->
-  <div class="nebula-glow nebula-1"></div>
-  <div class="nebula-glow nebula-2"></div>
 
   <!-- Main Application Container -->
   <div class="app-container">
@@ -26,7 +19,7 @@
     <!-- Cosmic Header / Navigation (Clean, no credits in nav bar) -->
     <header class="cosmic-navbar">
       <div class="brand-section">
-        <div class="brand-icon-box">🌌</div>
+        <div class="brand-icon-box">📒</div>
         <div class="brand-title-wrap">
           <h1>Attendance tracker</h1>
           <div class="brand-subtitle" style="font-size: 0.8rem; color: var(--text-secondary);">Student Attendance & Bunk Orbit Calculator</div>
@@ -590,8 +583,7 @@
   <!-- Toast Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <!-- Cosmic Background & Main Application Scripts -->
-  <script src="{{ url_for('static', filename='js/cosmic.js') }}"></script>
+  <!-- Main Application Script -->
   <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

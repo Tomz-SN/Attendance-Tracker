@@ -877,8 +877,8 @@ function renderAllCharts() {
 
   destroyAllCharts();
 
-  const cosmicTextColor = '#94a3b8';
-  const cosmicGridColor = 'rgba(255, 255, 255, 0.08)';
+  const cosmicTextColor = '#536176';
+  const cosmicGridColor = 'rgba(41, 54, 74, 0.12)';
 
   // Chart 1: Subject Bars (Attended vs Conducted)
   const barCanvas = document.getElementById('chart-subject-bars');

@@ -1,8 +1,8 @@
 # 🌌 Attendance Tracker
 
-An interactive, production-grade cosmic web application designed for students to track attendance, manage class hours, simulate safe bunks, and explore visual analytics.
+An interactive web application designed for students to track attendance, manage class hours, simulate safe bunks, and explore visual analytics, wrapped in a colorful notebook-inspired theme.
 
-Built to scale reliably for thousands of students with strict database table isolation, concurrent WAL-mode storage, and responsive cosmic aesthetics.
+Built to scale reliably for thousands of students with strict database table isolation, concurrent WAL-mode storage, and a responsive, sketchbook-style interface.
 
 ---
 
@@ -39,9 +39,9 @@ Built to scale reliably for thousands of students with strict database table iso
    - Cumulative timeline trajectory tracking attendance over dates.
    - CSV export and print-ready report.
 
-6. **Cosmic Starlight Theme**:
-   - Dynamic canvas starfield, drifting stardust nebulas, and shooting comets.
-   - Deep space glassmorphism UI with responsive design for desktop, tablet, and mobile.
+6. **Colorful Notebook Theme**:
+   - Warm lined-paper background with marker-like outlines and playful handwritten headings.
+   - Pastel sticky-note cards, bright accents, and responsive design for desktop, tablet, and mobile.
 
 ---
 
